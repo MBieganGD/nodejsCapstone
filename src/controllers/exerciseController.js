@@ -15,17 +15,6 @@ async function createExercise(req, res) {
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // const exerciseDate =
-    //   value.date && value.date.trim()
-    //     ? DateTime.fromISO(value.date).toISODate()
-    //     : DateTime.now().toISODate();
-
-    // const exercise = await Exercise.create({
-    //   ...value,
-    //   userId: user._id,
-    //   date: exerciseDate,
-    // });
-
     const exercise = await Exercise.create({
       ...value,
       userId: user._id,
@@ -56,6 +45,7 @@ async function getLogs(req, res) {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const where = { userId: _id };
+
     if (from || to) {
       where.date = {};
       if (from) {
@@ -66,17 +56,22 @@ async function getLogs(req, res) {
       }
     }
 
-    const exercises = await Exercise.findAll({
+    const allExercises = await Exercise.findAll({
       where,
       order: [["date", "ASC"]],
-      limit: limit ? parseInt(limit) : undefined,
       attributes: ["id", "description", "duration", "date"],
     });
 
+    const totalExercisesCount = allExercises.length;
+
+    const limitedExercises = limit
+      ? allExercises.slice(0, parseInt(limit))
+      : allExercises;
+
     res.json({
       username: user.username,
-      count: exercises.length,
-      log: exercises.map((e) => ({
+      count: totalExercisesCount,
+      log: limitedExercises.map((e) => ({
         id: e.id,
         description: e.description,
         duration: e.duration,
@@ -84,6 +79,7 @@ async function getLogs(req, res) {
       })),
     });
   } catch (err) {
+    console.error("Error in getLogs:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 }
