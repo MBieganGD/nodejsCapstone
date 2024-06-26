@@ -15,6 +15,17 @@ async function createExercise(req, res) {
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
+    // const exerciseDate =
+    //   value.date && value.date.trim()
+    //     ? DateTime.fromISO(value.date).toISODate()
+    //     : DateTime.now().toISODate();
+
+    // const exercise = await Exercise.create({
+    //   ...value,
+    //   userId: user._id,
+    //   date: exerciseDate,
+    // });
+
     const exercise = await Exercise.create({
       ...value,
       userId: user._id,
@@ -57,6 +68,7 @@ async function getLogs(req, res) {
 
     const exercises = await Exercise.findAll({
       where,
+      order: [["date", "ASC"]],
       limit: limit ? parseInt(limit) : undefined,
       attributes: ["id", "description", "duration", "date"],
     });
